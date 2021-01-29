@@ -48,6 +48,20 @@ class TpLinkRouter
     @acl_cache = read_acl_json
   end
 
+  def acl_cache_valid?
+    return false unless @acl_cache["data"]
+    return true
+  end
+
+  def device_status_as_string(mac)
+    return "UNKNOWN" unless acl_cache_valid?
+    if in_acl?(mac)
+      now_status = "DISABLED"
+    else
+      now_status = "ENABLED"
+    end
+  end
+
   def read_acl
     `curl --trace tracelog_read_acl -b cokkiejar -XPOST -d "operation=load" "http://#{routerip}/cgi-bin/luci/;stok=#{stok}/admin/access_control?form=black_list"`
   end
