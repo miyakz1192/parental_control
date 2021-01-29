@@ -38,7 +38,7 @@ class TpLinkRouter
     begin
       return JSON.parse(read_acl)
     rescue => e
-      Rails.logger.error ("ERROR in read_acl_json"
+      Rails.logger.error ("ERROR in read_acl_json")
       Rails.logger.error ([e.message]+e.backtrace).join($/)
     end
   end
