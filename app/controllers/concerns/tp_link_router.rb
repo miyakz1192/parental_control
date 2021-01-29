@@ -97,7 +97,10 @@ protected
   end
 
   def login_and_stok
-    return `curl -c cokkiejar -XPOST -d "operation=login&password=#{passwd}" "http://#{routerip}/cgi-bin/luci/;stok=/login?form=login" | jq -r 'select(has("data")) | .data.stok'`.chomp
+    #return `curl -c cokkiejar -XPOST -d "operation=login&password=#{passwd}" "http://#{routerip}/cgi-bin/luci/;stok=/login?form=login" | jq -r 'select(has("data")) | .data.stok'`.chomp
+    res = `curl -c cokkiejar -XPOST -d "operation=login&password=#{passwd}" "http://#{routerip}/cgi-bin/luci/;stok=/login?form=login"`.chomp
+    res = JSON.parse(res)
+    return res["data"]["stok"]
   end
 
   def routerip
