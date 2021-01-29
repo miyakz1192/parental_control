@@ -83,12 +83,7 @@ class DevicesController < ApplicationController
     def update_status_all
       router = home_router
       Device.all.each do |device|
-        if router.in_acl?(device.mac)
-          now_status = "DISABLED"
-        else
-          now_status = "ENABLED"
-        end
-        device.update!(status: now_status)
+        device.update!(status: router.device_status_as_string(device.mac))
       end
     end
 end
