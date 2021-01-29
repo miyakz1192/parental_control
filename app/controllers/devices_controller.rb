@@ -77,7 +77,7 @@ class DevicesController < ApplicationController
     end
 
     def home_router
-      TpLinkRouer.new(ENV["ROUTERIP"], ENV["PASSWD"])
+      TpLinkRouter.new(ENV["ROUTERIP"], ENV["PASSWD"])
     end
 
     def update_status_all
