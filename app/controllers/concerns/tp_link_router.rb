@@ -8,18 +8,54 @@ class TpLinkRouter
     update_acl_cache
   end
 
-  def entry_index(target_mac)
-    target_mac = normalize_mac(target_mac)
-    read_acl_json["data"].each_with_index do |entry, index|
-      entry_mac = entry["mac"].downcase
-      puts "mac cpmpare"
-      puts entry_mac
-      puts target_mac
-      if entry_mac == target_mac
-        return index
-      end
+  def device_status_as_string(mac)
+    return "UNKNOWN" unless acl_cache_valid?
+    if in_acl?(mac)
+      now_status = "DISABLED"
+    else
+      now_status = "ENABLED"
     end
-    return -1
+  end
+
+  def add_entry(name, target_mac)
+    target_mac = normalize_mac(target_mac)
+    `curl --trace tracelog_add -b cokkiejar -XPOST -d "operation=insert&key=add&index=0&old=add&new=%7B%22name%22%3A%22%22%2C%22mac%22%3A%22#{target_mac}%22%7D" "http://#{routerip}/cgi-bin/luci/;stok=#{stok}/admin/access_control?form=black_list"`
+  end
+
+  def delete_entry(target_mac)
+    delete_entry_with_index(entry_index(target_mac))
+  end
+
+protected
+  def delete_entry_with_index(index)
+    if index == -1 
+      puts "ERROR: with index is -1"
+      return
+    end
+    `curl --trace tracelog_add -b cokkiejar -XPOST -d "operation=remove&key=key-#{index}&index=#{index}" "http://#{routerip}/cgi-bin/luci/;stok=#{stok}/admin/access_control?form=black_list"`
+  end
+
+  def read_acl
+    `curl --trace tracelog_read_acl -b cokkiejar -XPOST -d "operation=load" "http://#{routerip}/cgi-bin/luci/;stok=#{stok}/admin/access_control?form=black_list"`
+  end
+
+  def update_acl_cache
+    @acl_cache = read_acl_json
+  end
+
+  def acl_cache_valid?
+    return false unless @acl_cache["data"]
+    return true
+  end
+
+  def read_acl_json
+    begin
+      return JSON.parse(read_acl)
+    rescue => e
+      Rails.logger.error ("ERROR in read_acl_json")
+      Rails.logger.error ([e.message]+e.backtrace).join($/)
+      return {}
+    end
   end
 
   def in_acl?(target_mac)
@@ -34,56 +70,23 @@ class TpLinkRouter
     return false
   end
 
-  def read_acl_json
-    begin
-      return JSON.parse(read_acl)
-    rescue => e
-      Rails.logger.error ("ERROR in read_acl_json")
-      Rails.logger.error ([e.message]+e.backtrace).join($/)
-      return {}
-    end
-  end
-
-  def update_acl_cache
-    @acl_cache = read_acl_json
-  end
-
-  def acl_cache_valid?
-    return false unless @acl_cache["data"]
-    return true
-  end
-
-  def device_status_as_string(mac)
-    return "UNKNOWN" unless acl_cache_valid?
-    if in_acl?(mac)
-      now_status = "DISABLED"
-    else
-      now_status = "ENABLED"
-    end
-  end
-
-  def read_acl
-    `curl --trace tracelog_read_acl -b cokkiejar -XPOST -d "operation=load" "http://#{routerip}/cgi-bin/luci/;stok=#{stok}/admin/access_control?form=black_list"`
-  end
-
-  def add_entry(name, target_mac)
+  def entry_index(target_mac)
     target_mac = normalize_mac(target_mac)
-    `curl --trace tracelog_add -b cokkiejar -XPOST -d "operation=insert&key=add&index=0&old=add&new=%7B%22name%22%3A%22%22%2C%22mac%22%3A%22#{target_mac}%22%7D" "http://#{routerip}/cgi-bin/luci/;stok=#{stok}/admin/access_control?form=black_list"`
-  end
+    acl_json = read_acl_json
 
-  def delete_entry_with_index(index)
-    if index == -1 
-      puts "ERROR: with index is -1"
-      return
+    return -1 unless acl_json["data"]
+
+    acl_json["data"].each_with_index do |entry, index|
+      entry_mac = entry["mac"].downcase
+      puts "mac cpmpare"
+      puts entry_mac
+      puts target_mac
+      if entry_mac == target_mac
+        return index
+      end
     end
-    `curl --trace tracelog_add -b cokkiejar -XPOST -d "operation=remove&key=key-#{index}&index=#{index}" "http://#{routerip}/cgi-bin/luci/;stok=#{stok}/admin/access_control?form=black_list"`
+    return -1
   end
-
-  def delete_entry(target_mac)
-    delete_entry_with_index(entry_index(target_mac))
-  end
-
-protected
 
   def normalize_mac(target_mac)
     target_mac.downcase.gsub(/:/, "-")

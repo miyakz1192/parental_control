@@ -62,6 +62,14 @@ class DevicesController < ApplicationController
     end
   end
 
+  def enable
+    home_router.add_entry(@device.mac)
+  end
+
+  def disable
+    home_router.delete_entry(@device.mac)
+  end
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_device
@@ -71,9 +79,6 @@ class DevicesController < ApplicationController
     # Only allow a list of trusted parameters through.
     def device_params
       params.require(:device).permit(:name, :mac)
-    end
-
-    def status
     end
 
     def home_router
