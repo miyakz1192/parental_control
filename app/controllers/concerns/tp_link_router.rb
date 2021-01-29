@@ -1,6 +1,6 @@
 require "json"
 
-class TpLinkRouer
+class TpLinkRouter
   def initialize(_routerip, _passwd)
     @routerip = _routerip
     @passwd = _passwd
