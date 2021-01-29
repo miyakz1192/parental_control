@@ -4,12 +4,13 @@ class TpLinkRouer
   def initialize(_routerip, _passwd)
     @routerip = _routerip
     @passwd = _passwd
+    @acl_cache = {}
+    update_acl_cache
   end
 
   def entry_index(target_mac)
     target_mac = normalize_mac(target_mac)
-    acl = JSON.parse(read_acl)
-    acl["data"].each_with_index do |entry, index|
+    read_acl_json["data"].each_with_index do |entry, index|
       entry_mac = entry["mac"].downcase
       puts "mac cpmpare"
       puts entry_mac
@@ -20,7 +21,27 @@ class TpLinkRouer
     end
     return -1
   end
-  
+
+  def in_acl?(target_mac)
+    acl = @acl_cache
+    return false unless acl["data"]
+    acl["data"].each do |entry|
+      entry_mac = entry["mac"].downcase
+      if entry_mac == target_mac
+        return true
+      end
+    end
+    return false
+  end
+
+  def read_acl_json
+    return JSON.parse(read_acl)
+  end
+
+  def update_acl_cache
+    @acl_cache = read_acl_json
+  end
+
   def read_acl
     `curl --trace tracelog_read_acl -b cokkiejar -XPOST -d "operation=load" "http://#{routerip}/cgi-bin/luci/;stok=#{stok}/admin/access_control?form=black_list"`
   end

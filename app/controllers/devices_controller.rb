@@ -4,6 +4,7 @@ class DevicesController < ApplicationController
   # GET /devices
   # GET /devices.json
   def index
+    update_status_all
     @devices = Device.all
   end
 
@@ -70,5 +71,24 @@ class DevicesController < ApplicationController
     # Only allow a list of trusted parameters through.
     def device_params
       params.require(:device).permit(:name, :mac)
+    end
+
+    def status
+    end
+
+    def home_router
+      TpLinkRouer.new(ENV["ROUTERIP"], ENV["PASSWD"])
+    end
+
+    def update_status_all
+      router = home_router
+      Device.all.each do |device|
+        if router.in_acl?(device.mac)
+          now_status = "DISABLED"
+        else
+          now_status = "ENABLED"
+        end
+        device.update!(status: now_status)
+      end
     end
 end
