@@ -27,6 +27,7 @@ class TpLinkRouter
 
   def delete_entry(target_mac)
     puts "DEBUG: delete_entry"
+    target_mac = normalize_mac(target_mac)
     delete_entry_with_index(entry_index(target_mac))
   end
 
@@ -73,7 +74,7 @@ protected
     acl = @acl_cache
     return false unless acl["data"]
     acl["data"].each do |entry|
-      entry_mac = entry["mac"].downcase
+      entry_mac = entry["mac"]
       if entry_mac == target_mac
         return true
       end
@@ -88,7 +89,7 @@ protected
     return -1 unless acl_json["data"]
 
     acl_json["data"].each_with_index do |entry, index|
-      entry_mac = entry["mac"].downcase
+      entry_mac = entry["mac"]
       puts "mac cpmpare"
       puts entry_mac
       puts target_mac
@@ -100,7 +101,7 @@ protected
   end
 
   def normalize_mac(target_mac)
-    target_mac.downcase.gsub(/:/, "-")
+    target_mac.upcase.gsub(/:/, "-")
   end
 
   def stok
