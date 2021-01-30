@@ -112,7 +112,7 @@ protected
   def login_and_stok
     puts "DEBUG: login_and_stok"
     #return `curl -c cokkiejar -XPOST -d "operation=login&password=#{passwd}&confirm=true" "http://#{routerip}/cgi-bin/luci/;stok=/login?form=login" | jq -r 'select(has("data")) | .data.stok'`.chomp
-    res = `curl -c cokkiejar -XPOST -d "operation=login&password=#{passwd}" "http://#{routerip}/cgi-bin/luci/;stok=/login?form=login"`.chomp
+    res = `curl -c cokkiejar -XPOST -d "operation=login&password=#{passwd}&confirm=true" "http://#{routerip}/cgi-bin/luci/;stok=/login?form=login"`.chomp
     puts res
     res = JSON.parse(res)
     return res["data"]["stok"]
