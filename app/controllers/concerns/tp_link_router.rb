@@ -8,9 +8,10 @@ class TpLinkRouter
     update_acl_cache
   end
 
-  def device_status_as_string(mac)
+  def device_status_as_string(target_mac)
+    target_mac = normalize_mac(target_mac)
     return "UNKNOWN" unless acl_cache_valid?
-    if in_acl?(mac)
+    if in_acl?(target_mac)
       now_status = "DISABLED"
     else
       now_status = "ENABLED"
