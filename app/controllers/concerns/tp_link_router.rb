@@ -18,11 +18,15 @@ class TpLinkRouter
   end
 
   def add_entry(name, target_mac)
+    puts "DEBUG: add_entry"
     target_mac = normalize_mac(target_mac)
-    `curl --trace tracelog_add -b cokkiejar -XPOST -d "operation=insert&key=add&index=0&old=add&new=%7B%22name%22%3A%22%22%2C%22mac%22%3A%22#{target_mac}%22%7D" "http://#{routerip}/cgi-bin/luci/;stok=#{stok}/admin/access_control?form=black_list"`
+    res = `curl --trace tracelog_add -b cokkiejar -XPOST -d "operation=insert&key=add&index=0&old=add&new=%7B%22name%22%3A%22%22%2C%22mac%22%3A%22#{target_mac}%22%7D" "http://#{routerip}/cgi-bin/luci/;stok=#{stok}/admin/access_control?form=black_list"`
+    puts res
+    return res
   end
 
   def delete_entry(target_mac)
+    puts "DEBUG: delete_entry"
     delete_entry_with_index(entry_index(target_mac))
   end
 
@@ -32,11 +36,16 @@ protected
       puts "ERROR: with index is -1"
       return
     end
-    `curl --trace tracelog_add -b cokkiejar -XPOST -d "operation=remove&key=key-#{index}&index=#{index}" "http://#{routerip}/cgi-bin/luci/;stok=#{stok}/admin/access_control?form=black_list"`
+    res = `curl --trace tracelog_add -b cokkiejar -XPOST -d "operation=remove&key=key-#{index}&index=#{index}" "http://#{routerip}/cgi-bin/luci/;stok=#{stok}/admin/access_control?form=black_list"`
+    puts res
+    return res
   end
 
   def read_acl
-    `curl --trace tracelog_read_acl -b cokkiejar -XPOST -d "operation=load" "http://#{routerip}/cgi-bin/luci/;stok=#{stok}/admin/access_control?form=black_list"`
+    puts "DEBUG: read_acl"
+    res = `curl --trace tracelog_read_acl -b cokkiejar -XPOST -d "operation=load" "http://#{routerip}/cgi-bin/luci/;stok=#{stok}/admin/access_control?form=black_list"`
+    puts res
+    return res
   end
 
   def update_acl_cache
@@ -44,6 +53,8 @@ protected
   end
 
   def acl_cache_valid?
+    puts "DEBUG: acl_cache_valid?"
+    puts @acl_cache["data"]
     return false unless @acl_cache["data"]
     return true
   end
@@ -97,8 +108,10 @@ protected
   end
 
   def login_and_stok
+    puts "DEBUG: login_and_stok"
     #return `curl -c cokkiejar -XPOST -d "operation=login&password=#{passwd}" "http://#{routerip}/cgi-bin/luci/;stok=/login?form=login" | jq -r 'select(has("data")) | .data.stok'`.chomp
     res = `curl -c cokkiejar -XPOST -d "operation=login&password=#{passwd}" "http://#{routerip}/cgi-bin/luci/;stok=/login?form=login"`.chomp
+    puts res
     res = JSON.parse(res)
     return res["data"]["stok"]
   end
