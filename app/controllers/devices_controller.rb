@@ -63,11 +63,11 @@ class DevicesController < ApplicationController
   end
 
   def enable
-    home_router.add_entry(@device.name, @device.mac)
+    home_router.delete_entry(@device.mac)
   end
 
   def disable
-    home_router.delete_entry(@device.mac)
+    home_router.add_entry(@device.name, @device.mac)
   end
 
   private
